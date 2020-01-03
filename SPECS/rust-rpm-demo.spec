@@ -6,6 +6,8 @@ License: GPL
 BuildArch: x86_64
 %description
 rust web demo
+%prep
+cp %{_sourcedir}/ -rf %{buildroot}
 %build
 cargo build
 %install
