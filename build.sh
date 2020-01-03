@@ -1,4 +1,4 @@
-$!/usr/bin/env bash
+#!/usr/bin/env bash
 mkdir SOURCES
 cargo build --release
 cp target/release/demo SOURCES
