@@ -1,0 +1,12 @@
+[Unit]
+Description= rust rpm demo
+After=network.target
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/rust-rpm-demo --bind="0.0.0.0:9090" --pid-file="/run/rust-rpm-demo.pid"
+
+[Install]
+WantedBy=multi-user.target

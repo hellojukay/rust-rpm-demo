@@ -1,4 +1,11 @@
+extern crate clap;
+use clap::{Arg, App as CliApp};
+
 use actix_web::{middleware, web, App, HttpRequest, HttpServer};
+use std::fs::File;
+use std::process;
+use std::io::*;
+
 
 async fn index(req: HttpRequest) -> &'static str {
     println!("REQ: {:?}", req);
@@ -7,6 +14,23 @@ async fn index(req: HttpRequest) -> &'static str {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    let app = CliApp::new("rust-rpm-demo").version("v1.0.0").author("hellojukay")
+        .arg(Arg::with_name("bind")
+             .short("b")
+             .takes_value(true)
+             .long("bind")
+             .help("bind address: 0.0.0.0:8080"))
+        .arg(Arg::with_name("pid-file")
+             .short("pid")
+             .long("pid-file")
+             .takes_value(true)
+             .help("pid filename")).get_matches();
+    let pid_file = app.value_of("pid-file").unwrap_or("/var/run/rust-rpm-demo.pid");
+    let bind = app.value_of("bind").unwrap_or("0.0.0.0:8080");
+    write_pid(pid_file.to_string());
+    println!("write pid to file: {}",pid_file);
+    println!("binding on address: {}",bind);
+
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
@@ -17,11 +41,18 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/index.html").to(|| async { "Hello world!" }))
             .service(web::resource("/").to(index))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(bind)?
     .run()
     .await
 }
-
+fn write_pid(pid_file: String) {
+    let mut file = match File::create(pid_file) {
+        Ok(f) => f,
+        Err(why) => panic!("can not create file {}",why),
+    };
+    writeln!(file,"{}",process::id());
+    file.sync_data();
+}
 #[cfg(test)]
 mod tests {
     use super::*;
