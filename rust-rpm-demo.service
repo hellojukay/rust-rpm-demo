@@ -1,6 +1,7 @@
 [Unit]
 Description= rust rpm demo
 After=network.target
+StartLimitIntervalSec
 [Service]
 Type=simple
 Restart=always
